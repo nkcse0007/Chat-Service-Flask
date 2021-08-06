@@ -2,7 +2,6 @@
 from flask import Flask, app
 from flask_restful import Api
 from flask_mongoengine import MongoEngine
-# from flask_jwt_extended import JWTManager
 import os
 from flask_mail import Mail
 from socketsio import create_socketio, socketio
@@ -12,9 +11,6 @@ from flask_session import Session
 # init mongoengine
 db = MongoEngine()
 session = Session()
-
-# init jwt manager
-# jwt = JWTManager()
 
 session.chat_clients = {}
 
@@ -42,7 +38,6 @@ default_config = {
     'MAIL_USE_TLS': False,
     'MAIL_USE_SSL': True,
     'SECRET_KEY': os.environ.get('SECRET_KEY'),
-    'JWT_SECRET_KEY': os.environ['JWT_SECRET_KEY'],
     "SESSION_PERMANENT": False,
     "SESSION_TYPE": "filesystem",
     'CORS_HEADERS': 'Content-Type',
@@ -81,17 +76,11 @@ def get_flask_app(config: dict = None) -> app.Flask:
     if 'MONGODB_URI' in os.environ:
         flask_app.config['MONGODB_SETTINGS'] = {'host': os.environ['MONGODB_URI'],
                                                 'retryWrites': False}
-    if 'JWT_SECRET_KEY' in os.environ:
-        flask_app.config['JWT_SECRET_KEY'] = os.environ['JWT_SECRET_KEY']
 
     # init api and routes
     api = Api(app=flask_app)
-    from authentication.routes import create_authentication_routes
-    create_authentication_routes(api=api)
     from chat.routes import create_chat_routes
     create_chat_routes(api=api)
-    from payment.routes import create_payment_routes
-    create_payment_routes(api=api)
 
     db.init_app(flask_app)
 

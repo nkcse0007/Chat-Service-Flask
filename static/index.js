@@ -1,18 +1,17 @@
-/* globals io */
-
-typeof Notification !== "undefined"
-Notification.permission
-Notification.requestPermission().then(function (permission) {
-    console.log(permission);
-});
-
-
+// /* globals io */
+//
+// typeof Notification !== "undefined"
+// Notification.permission
+// Notification.requestPermission().then(function (permission) {
+//     console.log(permission);
+// });
 function generate_browser_notification(title, icon, body) {
-    var notification = new Notification(title, {body, icon});
-    // notification.close();
+    // var notification = new Notification(title, {body, icon});
+    // // notification.close();
 }
 
 localStorage.removeItem('currentRoom')
+
 
 // let showNotification = document.visibilityState !== "visible";
 // if(showNotification) {
@@ -21,6 +20,17 @@ localStorage.removeItem('currentRoom')
 //
 // var notification = new Notification('Travel');
 // notification.close();
+
+function makeid(length) {
+    var result = '';
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for (var i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() *
+            charactersLength));
+    }
+    return result;
+}
 
 function chatHTML(message, user, timestamp) {
     return `
@@ -39,29 +49,19 @@ function chatHTML(message, user, timestamp) {
 
 function select_chat(room_id) {
     localStorage.setItem('currentRoom', room_id)
-    fetch(`${window.location.protocol}//${document.domain}:${window.location.port}/api/message/?room=${room_id}`, headers = {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-    })
+    document.getElementById('submit-message-input').style.display = "block";
+    fetch(`${window.location.protocol}//${document.domain}:${window.location.port}/api/message/?room=${room_id}`)
         .then(response => response.json())
         .then(data => {
-            debugger
             const messages = data.data.messages;
-            currentRoom = data.data.room;
-            // Save the current channel into the local storage
-            // localStorage.setItem('currentRoom', currentRoom);
-
-            // Highlight the chatroom button that the user is currently in
-            document.getElementById(currentRoom).className = 'btn btn-primary';
-
-            // Define the chatroom div
+            currentRoom = data.data.room.id;
+            currentRoomName = data.data.room.name
             const chatroom = document.querySelector('#messages-list');
 
-            // Delete the messages for the previous chatroom by removing first child
             while (chatroom.firstChild) {
                 chatroom.removeChild(chatroom.firstChild);
             }
-
-            // Load the messages for the chatroom
+            document.getElementById('submit-message-input-header').innerHTML = 'Current Room: ' + currentRoomName
             messages.forEach(messageItem => {
                 // Create the divider element
                 const divider = document.createElement('hr');
@@ -71,7 +71,9 @@ function select_chat(room_id) {
                 chatroom.appendChild(divider);
 
                 // Extract the timestamp, username, and message
-                const {message_body} = messageItem;
+                const {
+                    message_body
+                } = messageItem;
                 const timestamp = messageItem.created_at;
                 const user = messageItem.sender.email;
 
@@ -84,14 +86,10 @@ function select_chat(room_id) {
                 const objDiv = document.getElementById('messages-list');
                 objDiv.scrollTop = objDiv.scrollHeight;
             });
-
-
         })
         .catch((error) => {
             console.error('Error:', error);
         });
-
-
 }
 
 
@@ -99,6 +97,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Global vars
     let username = null;
     let currentRoom = null;
+    if (localStorage.getItem('currentRoom') == null) {
+        document.getElementById('submit-message-input').style.display = "none";
+    }
+    document.getElementById('name_field').innerHTML = localStorage.getItem('name')
 
     // Hide the chatroom initially
     const form = document.querySelector('#chatroom');
@@ -108,8 +110,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const socket = io.connect(`${window.location.protocol}//${document.domain}:${window.location.port}`, (socket) => {
         console.log('dfadfsafs', socket.id)
     });
-    socket.emit('get_chats', {'token': localStorage.getItem('token')}, (callback) => {
-        console.log(callback)
+    socket.emit('get_chats', {
+        'user': {
+            'user_id': localStorage.getItem('user_id'),
+            'email': localStorage.getItem('email'),
+            'name': localStorage.getItem('name')
+        }
+    }, (callback) => {
+        console.log('dfs')
     })
 
     // By default, ensure the login submit button is disabled
@@ -146,46 +154,40 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('#hello-user').innerHTML = username;
     }
 
-    function configureButton(button) {
-        // When a channel button is clicked
-        button.onclick = () => {
-            console.log('dfjslkj')
-            // Check that the user is NOT in the channel chatroom yet
-            if (currentRoom !== button.id) {
-                // Unhighlight the current channel button
-                if (currentRoom !== null) {
-                    document.getElementById(currentRoom).className =
-                        'btn btn-secondary';
-                }
-                // Emit to the serve that the user is moving to the channel
-                socket.emit('move to channel', {
-                    channel: button.id,
-                });
-            }
-
-            // Stop button from refreshing
-            return false;
-        };
-    }
-
 
     // When connected, configure submission forms and buttons
     socket.on('connect', () => {
         // ? When the username is submitted
-        socket.emit('connected', {token: localStorage.getItem('token'), 'sid': socket.io.engine.id});
+        socket.emit('connected', {
+            user: {
+                'user_id': localStorage.getItem('user_id'),
+                'email': localStorage.getItem('email'),
+                'name': localStorage.getItem('name')
+            },
+            'sid': socket.io.engine.id
+        });
+
+        console.log(socket)
         document.querySelector('#new-user-form').onsubmit = () => {
             // Grab the username from the input field
-            const usernameTemp = document.querySelector('#username-input').value;
+            const name = document.querySelector('#username-input').value;
+            const email = document.querySelector('#email-input').value;
+            localStorage.setItem('name', name)
+            localStorage.setItem('email', email)
+            localStorage.setItem('user_id', makeid(10))
+            location.reload();
             return false;
         };
 
         // ? If the username is already set in local storage
-        if (localStorage.getItem('token')) {
+        if (localStorage.getItem('user_id')) {
             // Unhide chatroom
             unhideChatroom();
 
             // Verify the local storage channel name first
-            socket.emit('verify channel', {channel: currentRoom});
+            socket.emit('verify channel', {
+                channel: currentRoom
+            });
 
             // Store username and current channel
             username = localStorage.getItem('username');
@@ -195,14 +197,19 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelector('#hello-user').innerHTML = username;
 
             // Check with the server that this 'username' is accounted for
-            socket.emit('confirm login', {username});
+            socket.emit('confirm login', {
+                username
+            });
 
             // Move the user to the saved channel
-            socket.emit('move to channel', {channel: currentRoom});
+            socket.emit('move to channel', {
+                channel: currentRoom
+            });
         }
 
         // ? Configure the Create channel form
         document.querySelector('#new-channel-form').onsubmit = () => {
+
             console.log('dfasldkfjdlskjl')
             // Add the channel name to the local vars in this function
             const channel = document.querySelector('#new-channel-input').value;
@@ -212,22 +219,24 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelector('#new-channel-button').disabled = true;
             data = {
                 name: channel,
-                participants: ['61010d7ce4c9786a417b4113'],
-                Authorization: localStorage.getItem('token'),
+                participants: [{
+                    'user_id': '61010d7ce4c9786a417b4113',
+                    'email': 'nitesh.kumar+1@techstriker.com',
+                    'name': 'Ravi'
+                }],
+                user: {
+                    'user_id': localStorage.getItem('user_id'),
+                    'email': localStorage.getItem('email'),
+                    'name': localStorage.getItem('name')
+                },
                 is_group: true
             }
-
             // Broadcast the channel creation to the server
             socket.emit('new_room_create', data);
 
             // Stop form from refreshing
             return false;
         };
-
-        // ? Configure the channel list buttons
-        document.getElementsByName('channel-button').forEach(button => {
-            configureButton(button);
-        });
 
         // ? Configure the send message form
         document.querySelector('#submit-message-form').onsubmit = () => {
@@ -241,7 +250,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 room: localStorage.getItem('currentRoom'),
                 message_body: message,
                 type: 'USER_TEXT_MESSAGE',
-                token: localStorage.getItem('token'),
+                user: {
+                    'user_id': localStorage.getItem('user_id'),
+                    'email': localStorage.getItem('email'),
+                    'name': localStorage.getItem('name')
+                },
             });
 
             // Prevent the submission from refreshing
@@ -249,65 +262,44 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     });
 
-// ? If channel name fails, throw up an alert
+    // ? If channel name fails, throw up an alert
     socket.on('room_creation_failed', () => {
         alert('Channel already exists. Try another name.');
     });
 
     socket.on('set_chats', data => {
         html = ''
+        console.log(data)
         for (let d of data['chats']) {
             id = d['id']
-            html += `<button class="btn btn-secondary" id="${d['id']}" name="channel-button" onclick="select_chat(id)" type="submit">${d['name']}</button>`
+            html += `<button class="btn btn-secondary" id="${d['id']}" name="channel-button" onclick="select_chat('${id.toString()}')" type="submit">${d['name']}</button>`
         }
         document.getElementById('channel-button-list').innerHTML = html
     })
 
-// ? If channel name was successful
+    // ? If channel name was successful
     socket.on('add_room', data => {
         // Grab the channel name added, uses object destructuring
-        const {channel} = data;
+        const {
+            channel
+        } = data;
+                debugger;
+
         // Create the button for the channel
         console.log('dfaljdlkfsaklfjlksfkl;jsdl')
         const button = document.createElement('button');
         button.className = 'btn btn-secondary';
-        button.id = channel.name;
+        button.id = channel.id;
         button.innerHTML = channel.name;
+        button.name = 'channel-button'
 
-        // Configure the button clicking features
-        configureButton(button);
+        button.setAttribute('onclick', `select_chat("${channel.id}")`)
 
         // Add the button to the channel list
         document.querySelector('#channel-button-list').append(button);
     });
 
-// ? If the username logs in successfully
-//     socket.on('new user', data => {
-//         // Update the global username
-//         // eslint-disable-next-line prefer-destructuring
-//         username = data.username;
-//         // Add the username and current channel to the local storage
-//         localStorage.setItem('username', username);
-//         localStorage.setItem('currentRoom', 'Main Channel');
-//
-//         // Remove the 'username taken' prompt if it is there
-//         let paragraph = document.querySelector('#username-taken').innerHTML;
-//         if (paragraph !== '') {
-//             paragraph = '';
-//         }
-//
-//         // Unhide the chatroom
-//         unhideChatroom();
-//
-//         // Show the username in index.html
-//         document.querySelector('#hello-user').innerHTML = data.username;
-//
-//         // Move the user to the default channel
-//         // Emit to the serve that the user is moving to the channel
-//         socket.emit('move to channel', {channel: 'Main Channel'});
-//     });
-
-// ? If the username is already taken
+    // ? If the username is already taken
     socket.on('username taken', () => {
         // Alert the user that the name is taken
         document.querySelector('#username-taken').innerHTML =
@@ -315,60 +307,23 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 
-// ? Enters the channel room, unload previous chat, load new chat
-//     socket.on('enter_channel_room', data => {
-//         // Set variables
-//         const {messages} = data;
-//         currentRoom = data.channel;
-//         // Save the current channel into the local storage
-//         localStorage.setItem('currentRoom', currentRoom);
-//
-//         // Highlight the chatroom button that the user is currently in
-//         document.getElementById(currentRoom).className = 'btn btn-primary';
-//
-//         // Define the chatroom div
-//         const chatroom = document.querySelector('#messages-list');
-//
-//         // Delete the messages for the previous chatroom by removing first child
-//         while (chatroom.firstChild) {
-//             chatroom.removeChild(chatroom.firstChild);
-//         }
-//
-//         // Load the messages for the chatroom
-//         messages.forEach(messageItem => {
-//             // Create the divider element
-//             const divider = document.createElement('hr');
-//             divider.className = 'my-1';
-//
-//             // Append the divider element
-//             chatroom.appendChild(divider);
-//
-//             // Extract the timestamp, username, and message
-//             const {message} = messageItem;
-//             const {timestamp} = messageItem;
-//             const user = messageItem.username;
-//
-//             // Create chat message div
-//             const div = document.createElement('div');
-//             div.innerHTML = chatHTML(message, user, timestamp); // returns custom HTML string
-//             chatroom.appendChild(div);
-//
-//             // Move the scrollbar to the bottom of the chat
-//             const objDiv = document.getElementById('messages-list');
-//             objDiv.scrollTop = objDiv.scrollHeight;
-//         });
-//     });
-
     socket.on('message_broadcast', data => {
         // Set variable
-        const {message_body} = data.message_body;
-        const {room} = data;
-        const {timestamp} = data;
+        console.log('message broadcast', data)
+        const {
+            message_body
+        } = data.message_body;
+        const {
+            room
+        } = data;
+        const {
+            timestamp
+        } = data;
         const user = data.sender.email;
         const chatroom = document.querySelector('#messages-list');
 
         // Check if the user is in the channel (whether they should see the message)
-        generate_browser_notification(title = 'New Message: '+ message_body, body = message_body)
+        generate_browser_notification(title = 'New Message: ' + message_body, body = message_body)
         if (localStorage.getItem('currentRoom') === room) {
             // Create the divider element
             const divider = document.createElement('hr');
@@ -389,12 +344,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-// ? Handle invalid channel name with a prompt
+    // ? Handle invalid channel name with a prompt
     socket.on('invalid channel name', () => {
         alert('Invalid channel name!');
     });
 
-// ? Default channel name
+    // ? Default channel name
     socket.on('default channel', () => {
         currentRoom = 'Main Channel';
     });

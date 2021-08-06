@@ -94,14 +94,6 @@ def get_location(ip):
     return location
 
 
-def get_user_from_token(request=None, token=None):
-    from utils.jwt.jwt_security import get_token, JwtAuth
-    if not token:
-        token = get_token(request)
-    Jwt = JwtAuth(token)
-    user, headers = Jwt.decode()[0], Jwt.decode()[1]
-    return user
-
 
 def id_generator(size=4, chars=string.digits):
     return ''.join(random.choice(chars) for x in range(size))

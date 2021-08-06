@@ -1,22 +1,37 @@
 from app import db
 from utils.constants import *
 from utils.db.base_model import AbstractBaseModel
-from authentication.models import UserLoginInfo
+
+
+class ChatUser(db.EmbeddedDocument):
+    user_id = db.StringField(required=True)
+    email = db.EmailField(required=True)
+    name = db.StringField(default='', required=False)
+    profile_image = db.URLField(default='https://www.classifapp.com/wp-content/uploads/2017/09/avatar-placeholder.png',
+                                required=False)
+
+    def to_json(self):
+        return {
+            'user_id': self.user_id,
+            'email': self.email,
+            'name': self.name,
+            'profile_image': self.profile_image
+        }
 
 
 class ChatRoom(AbstractBaseModel):
-    creator = db.ReferenceField(UserLoginInfo)
+    creator = db.EmbeddedDocumentField(ChatUser, required=True)
     is_group = db.BooleanField(default=True)
-    admins = db.ListField(db.ReferenceField(UserLoginInfo), default=list)
+    admins = db.ListField(db.EmbeddedDocumentField(ChatUser, required=True), default=list)
     name = db.StringField(required=True)
     image = db.URLField(required=False)
     status = db.MultiLineStringField(required=False)
-    participants = db.ListField(db.ReferenceField(UserLoginInfo), default=list)
+    participants = db.ListField(db.EmbeddedDocumentField(ChatUser, required=True), default=list)
 
     def to_json(self, *args, **kwargs):
         return {
             'id': str(self.pk),
-            'creator_id': self.creator.to_json()['id'],
+            'creator_id': self.creator.to_json(),
             'is_group': self.is_group,
             'admins': [admin.to_json() for admin in self.admins],
             'name': self.name,
@@ -29,13 +44,14 @@ class ChatRoom(AbstractBaseModel):
 
 
 class MessageRecipients(db.EmbeddedDocument):
-    recipient = db.ReferenceField(UserLoginInfo)
+    recipient = db.EmbeddedDocumentField(ChatUser, required=True)
     room = db.ReferenceField(ChatRoom)
-    is_received = db.ListField(db.ReferenceField(UserLoginInfo), default=list)
-    is_read = db.ListField(db.ReferenceField(UserLoginInfo), default=list)
+    is_received = db.ListField(db.EmbeddedDocumentField(ChatUser, required=True), default=list)
+    is_read = db.ListField(db.EmbeddedDocumentField(ChatUser, required=True), default=list)
 
     def to_json(self):
         return {
+            'recipient': self.recipient.to_json(),
             'is_received': self.is_received,
             'is_read': self.is_read,
             'room': self.room.to_json()
@@ -48,7 +64,7 @@ class MessageMedia(db.EmbeddedDocument):
 
 
 class Message(AbstractBaseModel):
-    sender = db.ReferenceField(UserLoginInfo)
+    sender = db.EmbeddedDocumentField(ChatUser, required=True)
     type = db.StringField(choices=MESSAGE_TYPES, default=DEFAULT_MESSAGE_TYPE, required=True)
     message_body = db.StringField(required=True)
     message_media = db.EmbeddedDocumentField(MessageMedia)

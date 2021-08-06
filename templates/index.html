@@ -10,15 +10,15 @@
 
     <div class="container">
         <div class="jumbotron mb-2">
-            <h1 class="display-4">ChatBox</h1>
-            <p class="lead">The coolest chatroom there is.</p>
+            <h1 id="name_field" class="display-4">ChatBox</h1>
         </div>
         <p id="hello-user" class="h3 my-0">Are you new here? Give yourself a name!</p>
 
         <div id="user-submission-div">
             <form id="new-user-form">
                 <div>
-                    <input id="username-input" autocomplete="off" type="text" autofocus placeholder="Enter username...">
+                    <input id="email-input" autocomplete="off" type="text" autofocus placeholder="Enter email...">
+                    <input id="username-input" autocomplete="off" type="text" autofocus placeholder="Enter name...">
                     <button class="btn-primary" id="login_submit_button" type="submit">Submit</button>
                 </div>
             </form>
@@ -32,17 +32,26 @@
                 <div class="row">
                     <form id="new-channel-form" class="form-inline">
                         <div class="col-12 ml-2 my-2">
-                            <input id="new-channel-input" autocomplete="off" type="text" autofocus
-                                   placeholder="Create a new channel.">
-                            <button class="btn-primary" id="new-channel-button" type="submit">Create</button>
+                            <div>
+                                <h5 style="float: left">Create Group Chat</h5>
+{#                                <label class="switch" style="float: right">#}
+{#                                    <input type="checkbox">#}
+{#                                    <span class="slider round"></span>#}
+{#                                </label>#}
+                            </div>
+                            <div style="margin: 10px">
+                                <input style="float:left;" id="new-channel-input" autocomplete="off" type="text" autofocus
+                                       placeholder="Create a new chat.">
+                                <button style="float: right" class="btn-primary" id="new-channel-button" type="submit">Create</button>
+                            </div>
                         </div>
                     </form>
                 </div>
 
-                <div class="row row-height-fixed">
+                <div class="row row-height-fixed" style="overflow: auto">
                     <div class="col-12">
                         <div class="btn-group-vertical ml-2 my-2" role="group" id="channel-button-list">
-{#                                        Channel button list# }#}
+                            {#                                        Channel button list# }#}
                         </div>
                     </div>
                 </div>
@@ -55,7 +64,7 @@
         </div>
 
         <div class="form-row align-items-right my-2">
-            <div class="col-4">
+            <div class="col-4" id="submit-message-input-header">
             </div>
 
             <div class="col-8">

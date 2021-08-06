@@ -1,0 +1,74 @@
+
+Api url: http://192.168.0.170:5050/
+
+
+Backend Events:
+
+1. get_chats: Hit this event from client side to fetch all the chats.
+data = {
+        'user': {
+            'user_id'
+            'email'
+            'name'
+        }
+
+
+
+2. connected   > send this event when socket is connected.
+
+data = {
+            'user': {
+		    'user_id'
+		    'email'
+		    'name'
+		}, 'sid': socket.io.engine.id
+        }
+
+
+3. new_room_create   > send this event to create a new room with roomid, participants, type.
+
+data = {
+                name: channel,
+                participants: [
+                    {
+                        'user_id': '61010d7ce4c9786a417b4113',
+                        'email': 'nitesh.kumar+1@techstriker.com',
+                        'name': 'Ravi'
+                    }
+                ],
+                'user': {
+		    'user_id'
+		    'email'
+		    'name'
+		},
+                is_group: true
+            }
+
+
+4. new_message   > send this event to send a new message to a particular room.
+
+data = {
+                room: room,
+                message_body: "message",
+                type: 'USER_TEXT_MESSAGE',
+                'user': {
+		    'user_id'
+		    'email'
+		    'name'
+		},
+            }
+
+5. typing_start  >  hit this event when someone focus on message input box.
+6. typing_end  > hit this event when someone remove focus on message input box.
+
+
+Frontend Side events:
+
+1. connect   > To build the connection, hit connected event inside it and send token with it.
+2. set_chats   > Hit from backend when backend sends chats listing. show the chats to the users.
+3. add_room   > Hit by backend when room is added to the database. show that room to the user.
+4. message_broadcast   > Hit by backend when message is saved to the database and will broadcast to all the participants which is inside that room.
+5. error > for any kind of error
+6. connect_error > for any connection error
+7. show_start_typing > to show typing indicator
+8. show_end_typing > to show if user stopped typing
