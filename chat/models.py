@@ -5,17 +5,19 @@ from utils.db.base_model import AbstractBaseModel
 
 class ChatUser(db.EmbeddedDocument):
     user_id = db.StringField(required=True)
-    email = db.EmailField(required=True)
+    email = db.StringField(required=True)
     name = db.StringField(default='', required=False)
     profile_image = db.URLField(default='https://www.classifapp.com/wp-content/uploads/2017/09/avatar-placeholder.png',
                                 required=False)
+    last_seen = db.DateTimeField(required=False)
 
     def to_json(self):
         return {
             'user_id': self.user_id,
             'email': self.email,
             'name': self.name,
-            'profile_image': self.profile_image
+            'profile_image': self.profile_image,
+            'last_seen': str(self.last_seen)
         }
 
 
@@ -38,16 +40,16 @@ class ChatRoom(AbstractBaseModel):
             'image': self.image,
             'status': self.status,
             'participants': [participant.to_json() for participant in self.participants],
-            'created_at': self.created_at.timestamp(),
-            'updated_at': self.updated_at.timestamp(),
+            'created_at': str(self.created_at),
+            'updated_at': str(self.updated_at),
         }
 
 
 class MessageRecipients(db.EmbeddedDocument):
     recipient = db.EmbeddedDocumentField(ChatUser, required=True)
     room = db.ReferenceField(ChatRoom)
-    is_received = db.ListField(db.EmbeddedDocumentField(ChatUser, required=True), default=list)
-    is_read = db.ListField(db.EmbeddedDocumentField(ChatUser, required=True), default=list)
+    is_received = db.BooleanField(default=False)
+    is_read = db.BooleanField(default=False)
 
     def to_json(self):
         return {
@@ -73,12 +75,13 @@ class Message(AbstractBaseModel):
 
     def to_json(self, *args, **kwargs):
         return {
+            'id': str(self.pk),
             'sender': self.sender.to_json(),
             'type': self.type,
             'message_body': self.message_body,
             'message_media': self.message_media,
             'is_sent': self.is_sent,
             'recipients': [recipient.to_json() for recipient in self.recipients],
-            'created_at': self.created_at.timestamp(),
-            'updated_at': self.updated_at.timestamp(),
+            'created_at': str(self.created_at),
+            'updated_at': str(self.updated_at),
         }

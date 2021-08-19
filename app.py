@@ -7,6 +7,7 @@ from flask_mail import Mail
 from socketsio import create_socketio, socketio
 from flask_cors import CORS
 from flask_session import Session
+import logging
 
 # init mongoengine
 db = MongoEngine()
@@ -66,7 +67,7 @@ def get_flask_app(config: dict = None) -> app.Flask:
     """
     # init flask
     flask_app = Flask(__name__)
-    CORS(flask_app, resources={r"/": {"origins": "*"}})
+    CORS(flask_app, resources={r"/*": {"origins": "*"}})
 
     # configure app
     config = default_config if config is None else config

@@ -94,7 +94,6 @@ def get_location(ip):
     return location
 
 
-
 def id_generator(size=4, chars=string.digits):
     return ''.join(random.choice(chars) for x in range(size))
 

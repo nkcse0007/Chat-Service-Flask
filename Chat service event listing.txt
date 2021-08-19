@@ -60,6 +60,7 @@ data = {
 
 5. typing_start  >  hit this event when someone focus on message input box.
 6. typing_end  > hit this event when someone remove focus on message input box.
+7. online_status > hit this event and send user_id in data, backend will send you all the online users.
 
 
 Frontend Side events:
@@ -72,3 +73,4 @@ Frontend Side events:
 6. connect_error > for any connection error
 7. show_start_typing > to show typing indicator
 8. show_end_typing > to show if user stopped typing
+9. online_status_show > receive online users list from backend in this event.
