@@ -18,7 +18,6 @@ class MessageApi(Resource):
 
     @staticmethod
     def get() -> Response:
-        import pdb;pdb.set_trace()
         input_data = request.values.to_dict()
         response = get_messages(input_data)
         return jsonify(response)
