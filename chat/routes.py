@@ -16,5 +16,5 @@ def create_chat_routes(api: Api):
         api.add_resource(FooSpecial, '/special/foo', endpoint="foo")
 
     """
-    api.add_resource(ChatApi, '/api/chat/')
-    api.add_resource(MessageApi, '/api/message/')
+    api.add_resource(ChatApi, '/chat/')
+    api.add_resource(MessageApi, '/chat/message/')

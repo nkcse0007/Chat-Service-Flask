@@ -17,7 +17,7 @@ from utils.services.email_service import send_chat_notification
 
 @socketio.on('connected')
 def connect(data):
-    # import pdb;pdb.set_trace()
+#    import pdb;pdb.set_trace()
     print('INSIDE CONNECTION -------------------------------------------------------------------------------------', 'CONNECTION ID', data['user']['user_id'])
     if not check_if_sid_exists(data):
         session.chat_clients[request.sid] = {
@@ -88,6 +88,7 @@ def typing_start(data):
 
 @socketio.on("new_room_create")
 def create_new_channel(data):
+#    import pdb;pdb.set_trace()
     print('INSIDE NEW CHANNEL -------------------------------------------------------------------------------------')
     # print(data)
     """ Checks whether a channel can be created. If so, this updates the

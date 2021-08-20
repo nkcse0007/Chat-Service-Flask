@@ -8,6 +8,7 @@ from socketsio import create_socketio, socketio
 from flask_cors import CORS
 from flask_session import Session
 import logging
+import urllib
 
 # init mongoengine
 db = MongoEngine()
@@ -74,15 +75,14 @@ def get_flask_app(config: dict = None) -> app.Flask:
     flask_app.config.update(config)
 
     # load config variables
-    if 'MONGODB_URI' in os.environ:
-        flask_app.config['MONGODB_SETTINGS'] = {'host': os.environ['MONGODB_URI'],
+#    if 'MONGODB_URI' in os.environ:
+    flask_app.config['MONGODB_SETTINGS'] = {'host': f"mongodb+srv://dliff:{urllib.parse.quote('dliff@123')}@cluster0.mvxi2.mongodb.net/Dliff?retryWrites=true&w=majority",
                                                 'retryWrites': False}
 
     # init api and routes
     api = Api(app=flask_app)
     from chat.routes import create_chat_routes
     create_chat_routes(api=api)
-
     db.init_app(flask_app)
 
     mail.init_app(flask_app)
