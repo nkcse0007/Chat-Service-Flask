@@ -8,7 +8,7 @@ from utils.common import generate_response
 from utils.http_code import *
 from flask_socketio import SocketIO, emit, join_room, leave_room, rooms, send
 import json
-from chat.selectors import get_rooms
+from chat.selectors import get_rooms, get_messages
 from app import session
 from flask import request
 from mongoengine.queryset.visitor import Q
@@ -65,7 +65,16 @@ def get_chats(data):
                                                         chat['participants'][0]['user_id'] != user['user_id'] else
                                                         chat['participants'][1]['user_id']).count()
         final_chats.append(chat)
-    emit('set_chats', {'chats': final_chats})
+    emit('set_chats', {'chats': final_chats}, broadcast=False)
+
+
+@socketio.on('get_messages')
+def get_chats(data):
+    print('INSIDE GET MESSAGES -------------------------------------------------------------------------------------')
+    # user = data['user']
+    # import pdb;pdb.set_trace()
+    response = get_messages(data)
+    emit('set_messages', {'messages': response}, broadcast=False)
 
 
 @socketio.on('typing_start')
