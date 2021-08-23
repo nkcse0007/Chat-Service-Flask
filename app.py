@@ -76,8 +76,8 @@ def get_flask_app(config: dict = None) -> app.Flask:
 
     # load config variables
 #    if 'MONGODB_URI' in os.environ:
-    flask_app.config['MONGODB_SETTINGS'] = {'host': f"mongodb+srv://dliff:{urllib.parse.quote('dliff@123')}@cluster0.mvxi2.mongodb.net/Dliff?retryWrites=true&w=majority",
-                                                'retryWrites': False}
+#    flask_app.config['MONGODB_SETTINGS'] = {'host': f"mongodb+srv://dliff:{urllib.parse.quote('dliff@123')}@cluster0.mvxi2.mongodb.net/Dliff?retryWrites=true&w=majority",
+#                                                'retryWrites': False}
 
     # init api and routes
     api = Api(app=flask_app)
