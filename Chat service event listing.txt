@@ -1,4 +1,3 @@
-
 Api url: http://192.168.0.170:5050/
 
 
@@ -60,7 +59,18 @@ data = {
 
 5. typing_start  >  hit this event when someone focus on message input box.
 6. typing_end  > hit this event when someone remove focus on message input box.
-7. online_status > hit this event and send user_id in data, backend will send you all the online users.
+7  read_status with data {room: "dfsfsdfafwsefsf"}
+8 online_status > hit this event and send user_id in data, backend will send you all the online users.
+9 get_messages: 
+data = {
+                room: room,
+                userId: 'user_id'
+		   
+            }
+
+
+
+
 
 
 Frontend Side events:
@@ -73,4 +83,6 @@ Frontend Side events:
 6. connect_error > for any connection error
 7. show_start_typing > to show typing indicator
 8. show_end_typing > to show if user stopped typing
-9. online_status_show > receive online users list from backend in this event.
+9. read_status_show: it will give you room id
+10 online_status_show > receive online users list from backend in this event.
+11 set_messages: you will get all message in this event

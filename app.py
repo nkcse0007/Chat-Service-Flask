@@ -55,7 +55,6 @@ default_config = {
     'CORS_SEND_WILDCARD': False,
     'CORS_SUPPORTS_CREDENTIALS': False,
     'CORS_VARY_HEADER': True,
-
 }
 
 
