@@ -61,15 +61,21 @@ class MessageRecipients(db.EmbeddedDocument):
 
 
 class MessageMedia(db.EmbeddedDocument):
-    link = db.URLField(required=False)
+    link = db.StringField(required=False)
     caption = db.StringField(required=False)
+
+    def to_json(self):
+        return {
+            'link': self.link,
+            'caption': self.caption
+        }
 
 
 class Message(AbstractBaseModel):
     sender = db.EmbeddedDocumentField(ChatUser, required=True)
     type = db.StringField(choices=MESSAGE_TYPES, default=DEFAULT_MESSAGE_TYPE, required=True)
-    message_body = db.StringField(required=True)
-    message_media = db.EmbeddedDocumentField(MessageMedia)
+    message_body = db.StringField(required=False, default = '')
+    message_media = db.EmbeddedDocumentField(MessageMedia, default={})
     is_sent = db.BooleanField(default=False)
     recipients = db.EmbeddedDocumentListField(MessageRecipients)
 
@@ -79,7 +85,7 @@ class Message(AbstractBaseModel):
             'sender': self.sender.to_json(),
             'type': self.type,
             'message_body': self.message_body,
-            'message_media': self.message_media,
+            'message_media': self.message_media.to_json(),
             'is_sent': self.is_sent,
             'recipients': [recipient.to_json() for recipient in self.recipients],
             'created_at': str(self.created_at),

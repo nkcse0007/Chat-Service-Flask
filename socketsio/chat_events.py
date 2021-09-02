@@ -82,6 +82,7 @@ def typing_start(data):
     print('INSIDE TYPING START -------------------------------------------------------------------------------------')
     chat_room = ChatRoom.objects(id=data['room']).get()
     clients = get_chat_clients(chat_room)
+    print(clients)
     for cl in clients:
         emit('show_start_typing', data, broadcast=False, room=cl['sid'])
 
@@ -163,7 +164,21 @@ def new_message(data):
 
     message = Message(sender=sender)
     message.type = data['type']
-    message.message_body = data['message_body']
+    try:
+        message.message_body = data['message_body']
+    except:
+        pass
+    print(data, 'message data')
+    if 'message_media' in data:
+        message_media = MessageMedia()
+        message_media.link = data['message_media']['link'] if 'link' in data['message_media'] else ''
+        message_media.caption = data['message_media']['caption'] if 'caption' in data['message_media'] else ''
+        message.message_media = message_media
+    else:
+        message_media = MessageMedia()
+        message_media.link = ''
+        message_media.caption = ''
+        message.message_media = message_media
     message.recipients = recipients
     message.save()
     data = {

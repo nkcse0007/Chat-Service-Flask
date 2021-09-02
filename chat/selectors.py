@@ -40,6 +40,7 @@ def get_messages(input_data):
     messages = Message.objects(recipients__room=input_data['room'])
     unread_count = Message.objects(recipients__room=room['id'], recipients__is_read=False,
                                    recipients__recipient__user_id=input_data['user_id']).count()
+
     return generate_response(
         data={'room': room, 'messages': [message.to_json() for message in messages], 'unread_count': unread_count},
         status=HTTP_200_OK)
